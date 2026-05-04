@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pharmacogenomics Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- SheetJS (xlsx.js) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.20.1/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      background: #181a1b;
+      color: #ececec;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    nav, .hero {
+      background: #23272b;
+      padding: 16px 24px;
+      box-shadow: 0 2px 8px #000a;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav .logo {
+      font-size: 1.4em;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      color: #97deff;
+      text-shadow: 0 1px 2px #0006;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: 2em;
+      margin: 0 0 4px 0;
+      color: #94e0ff;
+    }
+    .tabs {
+      background: #202124;
+      display: flex;
+      padding: 0 16px;
+      gap: 24px;
+      border-bottom: 2px solid #121314;
+    }
+    .tab {
+      padding: 14px 0 8px 0;
+      cursor: pointer;
+      color: #60e3fa;
+      transition: color 0.2s;
+      font-weight: 500;
+    }
+    .tab.active {
+      color: #fff;
+      border-bottom: 2px solid #94e0ff;
+    }
+    .statistics {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin: 24px 0 20px 0;
+    }
+    .stat-card {
+      background: #23272b;
+      border-radius: 10px;
+      padding: 12px 24px;
+      min-width: 100px;
+      box-shadow: 0 1px 4px #0005;
+      text-align: center;
+    }
+    .stat-card .label {
+      color: #7de2fa;
+      font-size: 0.9em;
+    }
+    .stat-card .value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #fff;
+    }
+    .search-panel {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 24px 0 12px 0;
+      justify-content: center;
+      gap: 12px;
+    }
+    .search-panel input {
+      background: #23272b;
+      border: 1px solid #71adc0;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 1em;
+      min-width: 260px;
+      outline: none;
+      transition: border .2s;
+    }
+    .search-panel input:focus {
+      border-color: #87eafd;
+    }
+    .search-panel .upload-label {
+      background: #23272b;
+      color: #b6eaff;
+      border: 1px solid #71adc0;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 4px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .search-panel .upload-label:hover {
+      background: #30414a;
+      color: #72e3ff;
+    }
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin: 40px auto 24px auto;
+      max-width: 1200px;
+      padding: 0 12px;
+    }
+    .card {
+      background: #222427;
+      border-radius: 14px;
+      box-shadow: 0 2px 18px #0009;
+      padding: 20px 18px 14px 18px;
+      color: #e3fafc;
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+    }
+    .card-fields {
+      display: grid;
+      gap: 9px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .card-field {
+      margin-bottom: 2px;
+    }
+    .card-field .key {
+      color: #72dadf;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    .card-field .value {
+      color: #fff;
+      word-break: break-all;
+      font-weight: 400;
+    }
+    .card .paper-link a {
+      color: #a6ffe2;
+      text-decoration: underline dashed 1.5px;
+    }
+    @media (max-width: 650px) {
+      .search-panel { flex-direction: column; align-items: center; }
+      .statistics { flex-direction: column; gap: 10px; }
+      .card-fields { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 440px) {
+      .card { padding: 10px 4px 9px 4px; }
+      .cards-container { gap: 11px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <span class="logo">Pharmacogenomics Explorer</span>
+    <span>
+      <a href="https://github.com/B-Dhanush22/html" style="color:#8febfa;text-decoration:none;" target="_blank">View Repo</a>
+    </span>
+  </nav>
+  <!-- Hero Section -->
+  <div class="hero">
+    <h1>Pharmacogenomics Data Portal</h1>
+    <p>
+      Explore curated pharmacogenomics relationships, evidence, and literature facts.<br/>
+      <small style="color:#b0eaff">All data powered by Excel file, SheetJS, and dynamic UI enhancements.</small>
+    </p>
+  </div>
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" id="search-tab" onclick="showTab('search')">Search &amp; Filter</div>
+    <div class="tab" id="stats-tab" onclick="showTab('stats')">Statistics</div>
+    <div class="tab" id="about-tab" onclick="showTab('about')">About</div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="statistics" id="stat-panel" style="display:flex;">
+    <div class="stat-card"><div class="label">Diseases</div><div class="value" id="stat-diseases">-</div></div>
+    <div class="stat-card"><div class="label">Drugs</div><div class="value" id="stat-drugs">-</div></div>
+    <div class="stat-card"><div class="label">Genes</div><div class="value" id="stat-genes">-</div></div>
+    <div class="stat-card"><div class="label">rsIDs</div><div class="value" id="stat-rsids">-</div></div>
+    <div class="stat-card"><div class="label">Rows</div><div class="value" id="stat-rows">-</div></div>
+  </div>
+  
+  <!-- Search/Filter UI -->
+  <div class="search-panel" id="search-panel">
+    <input type="search" id="search-box" placeholder="Type to filter by any column (e.g., disease, drug, gene, rsID, phenotype...)" oninput="renderCards()" autocomplete="off">
+    <label class="upload-label">
+      Upload Excel (.xlsx) <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none">
+    </label>
+    <span style="color:#8bebf0; font-size:0.92em; margin-top:9px;">
+      or using repo: <b>all_disorders_curated (1).xlsx</b>
+    </span>
+  </div>
+  
+  <!-- Cards Container -->
+  <div class="cards-container" id="cards-container"></div>
+
+  <!-- About tab content -->
+  <div style="display:none;padding:32px;color:#7ff6d1;max-width:700px;margin:0 auto;text-align:center;font-size:1.08em" id="about-panel">
+    <h2>About the Explorer</h2>
+    <p>
+      This interactive tool loads the complete, curated pharmacogenomic disorder dataset dynamically from your Excel file.
+      <ul style="color:#60f0eb;text-align:left;max-width:680px;margin:14px auto;">
+        <li><b>SheetJS</b> powers the live Excel reading—no manual data extraction needed.</li>
+        <li><b>All data columns</b> (currently 21, but unlimited supported) are automatically displayed—inclusive of fields like S.no, literature evidence, and paper links.</li>
+        <li><b>Search and Filter:</b> Type any keyword to search anywhere in the dataset, across every field.</li>
+        <li><b>Statistics:</b> Real-time counts for diseases, drugs, genes, RS IDs, and total records—auto-updated with the file.</li>
+        <li>Mobile-friendly, with a beautiful dark interface for less eye strain.</li>
+      </ul>
+      <b>Replace or upload your Excel file any time!</b>
+      <br>Created by <a href="https://github.com/B-Dhanush22" style="color:#bbfff8" target="_blank">@B-Dhanush22</a>.
+    </p>
+  </div>
+  
+  <script>
+    // UI Tab Switching
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.statistics, .search-panel, .cards-container, #about-panel').forEach(e => e.style.display = 'none');
+      if(tab === 'search') {
+        document.getElementById('search-tab').classList.add('active');
+        document.getElementById('stat-panel').style.display = 'flex';
+        document.getElementById('search-panel').style.display = 'flex';
+        document.getElementById('cards-container').style.display = 'grid';
+      } else if(tab === 'stats') {
+        document.getElementById('stats-tab').classList.add('active');
+        document.getElementById('stat-panel').style.display = 'flex';
+        document.getElementById('search-panel').style.display = 'none';
+        document.getElementById('cards-container').style.display = 'none';
+      } else if(tab === 'about') {
+        document.getElementById('about-tab').classList.add('active');
+        document.getElementById('stat-panel').style.display = 'none';
+        document.getElementById('search-panel').style.display = 'none';
+        document.getElementById('cards-container').style.display = 'none';
+        document.getElementById('about-panel').style.display = 'block';
+      }
+    }
+
+    // Global Excel Data Store
+    let excelData = [];
+    let allCols = [];
+
+    // Load Excel from Repo (default)
+    async function fetchExcelFromRepo() {
+      // GitHub raw fetch; assumes file in repo root as all_disorders_curated (1).xlsx
+      const url = 'https://raw.githubusercontent.com/B-Dhanush22/html/main/all_disorders_curated%20(1).xlsx';
+      const req = await fetch(url);
+      if (!req.ok) throw new Error('Failed to fetch Excel file from repo.');
+      const arrayBuffer = await req.arrayBuffer();
+      const wb = XLSX.read(arrayBuffer, {type: 'array'});
+      parseExcel(wb);
+    }
+
+    // Handle uploaded Excel
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const data = evt.target.result;
+        const wb = XLSX.read(data, {type: 'array'});
+        parseExcel(wb);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    // Parse Excel and Extract Data
+    function parseExcel(wb) {
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      excelData = XLSX.utils.sheet_to_json(sheet, {defval:'', raw:true}); // Data as array of objects
+      // All unique keys/columns
+      allCols = [];
+      excelData.forEach(row => {
+        Object.keys(row).forEach(k => { if(!allCols.includes(k)) allCols.push(k); });
+      });
+      updateStatistics();
+      renderCards();
+    }
+    // Render Cards for All Filtered Data
+    function renderCards() {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+      const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
+      let filtered = excelData;
+      if(q.length > 0) {
+        filtered = excelData.filter(row => {
+          // True if any col contains the query
+          return allCols.some(col => String(row[col]).toLowerCase().includes(q));
+        });
+      }
+      for(const row of filtered) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        // Create key-value field display for every column
+        const fieldsDiv = document.createElement('div');
+        fieldsDiv.className = 'card-fields';
+        allCols.forEach(col => {
+          const fieldDiv = document.createElement('div');
+          fieldDiv.className = 'card-field';
+          const keySpan = document.createElement('span');
+          keySpan.className = 'key';
+          keySpan.textContent = col;
+          const valSpan = document.createElement('span');
+          valSpan.className = 'value';
+          if(/paper.*link/i.test(col) && String(row[col]).trim().startsWith('http')) {
+            valSpan.innerHTML = `<a href="${row[col]}" target="_blank" rel="noopener noreferrer">${row[col]}</a>`;
+            fieldDiv.className += ' paper-link';
+          } else {
+            valSpan.textContent = row[col];
+          }
+          fieldDiv.appendChild(keySpan);
+          fieldDiv.appendChild(valSpan);
+          fieldsDiv.appendChild(fieldDiv);
+        });
+        card.appendChild(fieldsDiv);
+        container.appendChild(card);
+      }
+      // If none shown
+      if(filtered.length === 0) {
+        container.innerHTML = `<div style="padding:38px 12px;font-size:1.2em;color:#9ee0ef;background:#23272b;border-radius:9px;text-align:center;">No results found.<br>Try another search!</div>`;
+      }
+    }
+
+    // Calculate and Update Statistics Panel
+    function updateStatistics() {
+      const panel = {
+        diseases: document.getElementById('stat-diseases'),
+        drugs: document.getElementById('stat-drugs'),
+        genes: document.getElementById('stat-genes'),
+        rsids: document.getElementById('stat-rsids'),
+        rows: document.getElementById('stat-rows')
+      };
+      // Find col names for statistics (best effort)
+      const lowerCols = allCols.map(s => s.toLowerCase());
+      function findCol(keywords) {
+        for(const kw of keywords) {
+          const idx = lowerCols.findIndex(n => n.includes(kw));
+          if(idx !== -1) return allCols[idx];
+        }
+        return null;
+      }
+      const colMap = {
+        diseases: findCol(['disease']),
+        drugs: findCol(['drug']),
+        genes: findCol(['gene']),
+        rsids: findCol(['rsid','rs id','rs_id'])
+      };
+      function uniqueFieldCount(field) {
+        if(!field) return 0;
+        const vals = excelData.map(r => String(r[field])).filter(x=>x && x!=='');
+        return new Set(vals).size;
+      }
+      panel.diseases.textContent = uniqueFieldCount(colMap.diseases);
+      panel.drugs.textContent = uniqueFieldCount(colMap.drugs);
+      panel.genes.textContent = uniqueFieldCount(colMap.genes);
+      panel.rsids.textContent = uniqueFieldCount(colMap.rsids);
+      panel.rows.textContent = excelData.length;
+    }
+
+    // Load Excel on Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchExcelFromRepo().catch(e => {
+        document.getElementById('cards-container').innerHTML = `<div style="color:#fa9880;padding:24px;text-align:center;">Could not load default Excel file from repo.<br><b>Tip:</b> Upload your Excel file using the button above.</div>`;
+      });
+    });
+  </script>
+</body>
+</html>
